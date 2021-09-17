@@ -73,6 +73,27 @@ describe 'Temporal.await_workflow_result' do
       expect(e.message).to eq('Whoops')
     end
   end
+  
+  it 'raises for workflows that fail with two-argument Errors' do
+    workflow_id = SecureRandom.uuid
+    run_id = Temporal.start_workflow(
+      FailingWorkflow,
+      'some_error_context',
+      { options: { workflow_id: workflow_id } },
+    )
+
+    expect do
+      Temporal.await_workflow_result(
+        FailingWorkflow,
+        workflow_id: workflow_id,
+        run_id: run_id,
+      )
+    end.to raise_error(FailingWorkflow::SomeComplexError) do |e|
+      expect(e.backtrace.first).to match(/failing_workflow.rb/)
+      expect(e.message).to eq('Whoopsie')
+    end
+
+  end
 
   it 'raises Temporal::WorkflowTimedOut when the workflow times out' do
     workflow_id = SecureRandom.uuid
