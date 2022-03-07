@@ -33,6 +33,9 @@ module Temporal
           state_manager.apply(window)
         end
 
+        to_print = state_manager.commands.map{|x,y| "#{y.class} (#{x})"}
+
+        puts("Final list of commands: #{to_print.join(", ")}")
         return state_manager.commands
       end
 

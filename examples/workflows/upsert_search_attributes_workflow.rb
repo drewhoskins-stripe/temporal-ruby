@@ -14,8 +14,12 @@ class UpsertSearchAttributesWorkflow < Temporal::Workflow
       'CustomDatetimeField' => time_value,
     }
     workflow.upsert_search_attributes(attributes)
+    future = HelloWorldActivity.execute("Moon")
 
-    HelloWorldActivity.execute!("Moon")
+    name = workflow.side_effect { SecureRandom.uuid }
+    workflow.wait_for_all(future)
+
+    HelloWorldActivity.execute!(name)
     attributes
   end
 end
