@@ -17,7 +17,8 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'grpc'
   spec.add_dependency 'oj'
 
-  spec.add_development_dependency 'pry'
+  spec.add_dependency 'pry'
+  spec.add_dependency 'pry-nav'
   spec.add_development_dependency 'rspec'
   spec.add_development_dependency 'fabrication'
   spec.add_development_dependency 'grpc-tools'

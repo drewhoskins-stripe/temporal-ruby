@@ -16,6 +16,11 @@ module Temporal
           @replay
         end
 
+        def print
+          puts("Last event ID: #{@last_event_id} Markers: #{markers.map(&:type).join(", ")}")
+          puts("Replay: #{@replay} Events: #{events.map(&:type).join(", ")}")
+        end
+
         def add(event)
           case event.type
           when 'MARKER_RECORDED'

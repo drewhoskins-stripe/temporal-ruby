@@ -58,6 +58,8 @@ module Temporal
 
         validate_append_command(command)
         commands << [command_id, command]
+        to_print = commands.map{|x,y| "#{y.class} (#{x})"}
+        puts("Appending command, new list: #{to_print.join(", ")}")
 
         return [event_target_from(command_id, command), cancelation_id]
       end
@@ -73,6 +75,8 @@ module Temporal
       end
 
       def apply(history_window)
+        puts("Applying history window")
+        history_window.print
         @replay = history_window.replay?
         @local_time = history_window.local_time
         @last_event_id = history_window.last_event_id
@@ -119,7 +123,7 @@ module Temporal
       def apply_event(event)
         state_machine = command_tracker[event.originating_event_id]
         target = History::EventTarget.from_event(event)
-
+        puts("Apply Event: #{event.type} #{target}")
         case event.type
         when 'WORKFLOW_EXECUTION_STARTED'
           state_machine.start
@@ -221,6 +225,8 @@ module Temporal
 
         when 'MARKER_RECORDED'
           state_machine.complete
+          # Markers are specially tracked so no need to discard_command; see apply()
+
           handle_marker(event.id, event.attributes.marker_name, from_details_payloads(event.attributes.details['data']))
 
         when 'WORKFLOW_EXECUTION_SIGNALED'
@@ -283,7 +289,6 @@ module Temporal
           dispatch(target, 'completed')
 
         when 'UPSERT_WORKFLOW_SEARCH_ATTRIBUTES'
-          # no need to track state; this is just a synchronous API call.
           discard_command(target)
 
         else
@@ -328,8 +333,11 @@ module Temporal
         if !existing_command_id
           raise NonDeterministicWorkflowError, "A command #{target} was not scheduled upon replay"
         end
-
+        # require 'pry'; binding.pry
         existing_target = event_target_from(existing_command_id, existing_command)
+        puts("Discarding: new command: #{target} old command: #{existing_target}")
+        to_print = commands.map{|x,y| "#{y.class} (#{x})"}
+        puts("New command list: #{to_print.join(", ")}")
         if target != existing_target
           raise NonDeterministicWorkflowError, "Unexpected command #{existing_target} (expected #{target})"
         end
